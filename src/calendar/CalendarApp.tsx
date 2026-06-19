@@ -3,6 +3,7 @@ import { Panel, Button, PopupPanel } from 'remochi';
 import CalendarMonthRail from './CalendarMonthRail';
 import CalendarDayCanvas from './CalendarDayCanvas';
 import CalendarWeekCanvas from './CalendarWeekCanvas';
+import CalendarMonthCanvas from './CalendarMonthCanvas';
 import CalendarViewSwitcher, { type CalendarViewMode } from './CalendarViewSwitcher';
 import {
   type CalendarDay,
@@ -12,6 +13,7 @@ import {
   getWeekHeading,
   getDayHeading,
   getDaySubheading,
+  getMonthLabel,
 } from './calendarMonthUtils';
 import './calendar.css';
 
@@ -57,7 +59,7 @@ export default function CalendarApp(): JSX.Element {
     [selectedDate]
   );
 
-  // ─── View transitions ─────────────────────────────────────────────────────
+  // ─── View transitions ──────────────────────────────────────────────────────
 
   function handleViewChange(next: CalendarViewMode): void {
     if (next === viewMode) return;
@@ -66,7 +68,7 @@ export default function CalendarApp(): JSX.Element {
       setWeekAnimState('enter');
       setViewMode(next);
       window.setTimeout(() => setWeekAnimState('idle'), 350);
-    } else if (viewMode === 'week' && next === 'day') {
+    } else if (viewMode === 'week' && next !== 'week') {
       setOriginColIndex(getColIndex(selectedDate));
       setWeekAnimState('exit');
       window.setTimeout(() => { setViewMode(next); setWeekAnimState('idle'); }, 350);
@@ -75,7 +77,40 @@ export default function CalendarApp(): JSX.Element {
     }
   }
 
-  // ─── Day navigation ───────────────────────────────────────────────────────
+  // ─── Navigation ────────────────────────────────────────────────────────────
+  // Day   → ±1 day
+  // Week  → ±7 days
+  // Month → ±1 month (keeps day-of-month, clamps to last day)
+
+  function handlePrev(): void {
+    if (viewMode === 'week') {
+      const prev = new Date(selectedDate);
+      prev.setDate(prev.getDate() - 7);
+      setSelectedDate(prev);
+    } else if (viewMode === 'month') {
+      const prev = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1);
+      setSelectedDate(prev);
+    } else {
+      const prev = new Date(selectedDate);
+      prev.setDate(prev.getDate() - 1);
+      navigate('right', prev);
+    }
+  }
+
+  function handleNext(): void {
+    if (viewMode === 'week') {
+      const next = new Date(selectedDate);
+      next.setDate(next.getDate() + 7);
+      setSelectedDate(next);
+    } else if (viewMode === 'month') {
+      const next = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
+      setSelectedDate(next);
+    } else {
+      const next = new Date(selectedDate);
+      next.setDate(next.getDate() + 1);
+      navigate('left', next);
+    }
+  }
 
   function navigate(dir: SlideDir, next: Date): void {
     const currentKey = prevKeyRef.current;
@@ -88,22 +123,13 @@ export default function CalendarApp(): JSX.Element {
   }
 
   function handleSelectDay(day: CalendarDay): void {
-    const dir: SlideDir = day.date > selectedDate ? 'left' : 'right';
-    navigate(dir, day.date);
-  }
-
-  function handlePrev(): void {
-    const prev = new Date(selectedDate);
-    prev.setDate(prev.getDate() - (viewMode === 'week' ? 7 : 1));
-    if (viewMode === 'week') { setSelectedDate(prev); }
-    else { navigate('right', prev); }
-  }
-
-  function handleNext(): void {
-    const next = new Date(selectedDate);
-    next.setDate(next.getDate() + (viewMode === 'week' ? 7 : 1));
-    if (viewMode === 'week') { setSelectedDate(next); }
-    else { navigate('left', next); }
+    if (viewMode === 'month') {
+      // In month view just update selection; day panel re-renders in place
+      setSelectedDate(day.date);
+    } else {
+      const dir: SlideDir = day.date > selectedDate ? 'left' : 'right';
+      navigate(dir, day.date);
+    }
   }
 
   function handleMoreClick(): void {
@@ -112,42 +138,54 @@ export default function CalendarApp(): JSX.Element {
     setMoreOpen((o) => !o);
   }
 
-  const dateKey = toDateKey(selectedDate);
-  const isWeekView = viewMode === 'week';
+  // ─── Header label ──────────────────────────────────────────────────────────
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  function getHeading(): string {
+    if (viewMode === 'week')  return getWeekHeading(selectedDate);
+    if (viewMode === 'month') return getMonthLabel(visibleMonth);
+    return getDayHeading(selectedDate);
+  }
+
+  const dateKey    = toDateKey(selectedDate);
+  const isWeekView = viewMode === 'week';
+  const isDayView  = viewMode === 'day';
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="calendar-appShell">
       <div className="calendar-appShell__frame">
         <div className="calendar-appShell__content">
 
-          {/* Rail */}
-          <div className="calendar-appShell__railWrap">
-            <Panel>
-              <div className="calendar-appShell__railInner">
-                <CalendarMonthRail
-                  visibleMonth={visibleMonth}
-                  selectedDate={selectedDate}
-                  dayMetaMap={demoDayMeta}
-                  onSelectDay={handleSelectDay}
-                />
-              </div>
-            </Panel>
-          </div>
+          {/* Rail — hidden in month view (day canvas is inside the canvas itself) */}
+          {viewMode !== 'month' && (
+            <div className="calendar-appShell__railWrap">
+              <Panel>
+                <div className="calendar-appShell__railInner">
+                  <CalendarMonthRail
+                    visibleMonth={visibleMonth}
+                    selectedDate={selectedDate}
+                    dayMetaMap={demoDayMeta}
+                    onSelectDay={handleSelectDay}
+                  />
+                </div>
+              </Panel>
+            </div>
+          )}
 
-          {/* Main canvas */}
-          <div className="calendar-appShell__mainWrap">
+          {/* Main canvas — spans full width in month view */}
+          <div
+            className="calendar-appShell__mainWrap"
+            style={viewMode === 'month' ? { gridColumn: '1 / -1' } : undefined}
+          >
             <Panel>
               <div className="calendar-appShell__mainInner">
 
                 {/* ─── Single shared header ─── */}
                 <div className="calendar-day__headingWrap">
                   <div className="calendar-day__headingLeft">
-                    <div className="calendar-day__heading">
-                      {isWeekView ? getWeekHeading(selectedDate) : getDayHeading(selectedDate)}
-                    </div>
-                    {!isWeekView && (
+                    <div className="calendar-day__heading">{getHeading()}</div>
+                    {isDayView && (
                       <div className="calendar-day__subheading">
                         {getDaySubheading(selectedDate)}
                       </div>
@@ -171,7 +209,7 @@ export default function CalendarApp(): JSX.Element {
                 </div>
 
                 {/* ─── Canvas area ─── */}
-                {viewMode === 'day' && (
+                {isDayView && (
                   <div className="calendar-day__slideViewport">
                     {exitKey && exitKey !== dateKey && (
                       <div
@@ -198,11 +236,20 @@ export default function CalendarApp(): JSX.Element {
                   </div>
                 )}
 
-                {viewMode === 'week' && (
+                {isWeekView && (
                   <CalendarWeekCanvas
                     selectedDate={selectedDate}
                     originColIndex={originColIndex}
                     animState={weekAnimState}
+                  />
+                )}
+
+                {viewMode === 'month' && (
+                  <CalendarMonthCanvas
+                    visibleMonth={visibleMonth}
+                    selectedDate={selectedDate}
+                    dayMetaMap={demoDayMeta}
+                    onSelectDay={handleSelectDay}
                   />
                 )}
 

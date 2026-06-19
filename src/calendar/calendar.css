@@ -257,6 +257,14 @@ body { color: var(--calendar-text); }
 
 /* ─── Day canvas — timeline ──────────────────────────────────────────────── */
 
+.calendar-day__timelineShell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .calendar-day__timeline {
   position: relative;
   flex: 1 1 auto;
@@ -416,53 +424,159 @@ body { color: var(--calendar-text); }
 }
 
 /* ─── Week bloom animation ───────────────────────────────────────────────── */
-/*
-  Each column grows/shrinks from/to its center.
-  The origin column has delay=0 and blooms first;
-  adjacent columns follow with staggered delay via --col-delay.
-*/
 
 @keyframes weekColEnter {
-  from {
-    transform: scaleX(0.05) scaleY(0.3);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1) scaleY(1);
-    opacity: 1;
-  }
+  from { transform: scaleX(0.05) scaleY(0.3); opacity: 0; }
+  to   { transform: scaleX(1) scaleY(1);       opacity: 1; }
 }
 
 @keyframes weekColExit {
-  from {
-    transform: scaleX(1) scaleY(1);
-    opacity: 1;
-  }
-  to {
-    transform: scaleX(0.05) scaleY(0.3);
-    opacity: 0;
-  }
+  from { transform: scaleX(1) scaleY(1);       opacity: 1; }
+  to   { transform: scaleX(0.05) scaleY(0.3); opacity: 0; }
 }
 
 .calendar-week__col--enter {
-  animation:
-    weekColEnter
-    var(--calendar-bloom-duration)
-    var(--calendar-bloom-easing)
-    var(--col-delay, 0ms)
-    both;
+  animation: weekColEnter var(--calendar-bloom-duration) var(--calendar-bloom-easing) var(--col-delay, 0ms) both;
   transform-origin: center center;
 }
 
 .calendar-week__col--exit {
-  animation:
-    weekColExit
-    var(--calendar-bloom-duration)
-    var(--calendar-bloom-easing)
-    var(--col-delay, 0ms)
-    both;
+  animation: weekColExit var(--calendar-bloom-duration) var(--calendar-bloom-easing) var(--col-delay, 0ms) both;
   transform-origin: center center;
   pointer-events: none;
+}
+
+/* ─── Month view ─────────────────────────────────────────────────────────── */
+
+/*
+  Split layout:
+    Left  (300px fixed) — CalendarDayCanvas for the selected date
+    Right (flex 1)      — Full month grid
+*/
+
+.calendar-month {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left panel: day canvas ── */
+
+.calendar-month__dayPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--calendar-line-soft);
+  padding-right: 24px;
+}
+
+/* Strip the day canvas heading inside month view — heading lives in CalendarApp */
+.calendar-month__dayPanel .calendar-day__headingWrap {
+  display: none;
+}
+
+/* ── Right panel: month grid ── */
+
+.calendar-month__gridPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.calendar-month__weekdayRow {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 6px;
+  flex: 0 0 auto;
+}
+
+.calendar-month__weekdayLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-align: center;
+  color: var(--calendar-text-soft);
+  padding-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.calendar-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ── Month cell ── */
+
+.calendar-month__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--calendar-text);
+  cursor: pointer;
+  padding: 6px 4px;
+  transition: background 160ms ease, color 160ms ease;
+  min-height: 0;
+}
+
+.calendar-month__cell:hover:not(.calendar-month__cell--selected):not(.calendar-month__cell--outOfMonth) {
+  background: rgba(0,0,0,0.045);
+}
+
+.calendar-month__cell--outOfMonth {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.calendar-month__cell--today .calendar-month__cellDate {
+  color: var(--mochi-primary, #63c7ef);
+  font-weight: 700;
+}
+
+.calendar-month__cell--selected {
+  background: var(--mochi-primary, #63c7ef);
+  color: #fff;
+}
+
+.calendar-month__cell--selected .calendar-month__cellDate {
+  color: #fff;
+}
+
+.calendar-month__cell--selected .calendar-month__eventBadge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+.calendar-month__cellDate {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.calendar-month__eventBadge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(0,0,0,0.07);
+  color: var(--calendar-text-soft);
+  border-radius: 999px;
+  padding: 2px 7px;
+  white-space: nowrap;
 }
 
 /* ─── View switcher ──────────────────────────────────────────────────────── */
@@ -492,6 +606,8 @@ body { color: var(--calendar-text); }
 @media (max-width: 1100px) {
   .calendar-appShell__content { grid-template-columns: 1fr; }
   .calendar-day__heading      { font-size: 44px; }
+  .calendar-month             { grid-template-columns: 1fr; }
+  .calendar-month__dayPanel   { display: none; }
 }
 
 /* ─── Reduced motion ─────────────────────────────────────────────────────── */
