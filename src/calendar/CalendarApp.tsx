@@ -22,6 +22,22 @@ export default function CalendarApp(): JSX.Element {
     setSelectedDate(day.date);
   }
 
+  function handlePrevDay(): void {
+    setSelectedDate((d) => {
+      const prev = new Date(d);
+      prev.setDate(prev.getDate() - 1);
+      return prev;
+    });
+  }
+
+  function handleNextDay(): void {
+    setSelectedDate((d) => {
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      return next;
+    });
+  }
+
   return (
     <div className="calendar-appShell">
       <div className="calendar-appShell__frame">
@@ -42,7 +58,12 @@ export default function CalendarApp(): JSX.Element {
           <div className="calendar-appShell__mainWrap">
             <Panel>
               <div className="calendar-appShell__mainInner">
-                <CalendarDayCanvas selectedDate={selectedDate} events={events} />
+                <CalendarDayCanvas
+                  selectedDate={selectedDate}
+                  events={events}
+                  onPrevDay={handlePrevDay}
+                  onNextDay={handleNextDay}
+                />
                 <CalendarViewSwitcher value={viewMode} onChange={setViewMode} />
               </div>
             </Panel>
