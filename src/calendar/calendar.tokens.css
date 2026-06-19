@@ -1,0 +1,26 @@
+/* ─── Design tokens ──────────────────────────────────────────────────────────
+   Shared CSS custom properties for the entire calendar feature.
+   Imported once via CalendarApp.css.
+──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --calendar-bg:               #f2f2f2;
+  --calendar-surface:          #f8f8f8;
+  --calendar-surface-2:        #efefef;
+  --calendar-line:             #d7d7d7;
+  --calendar-line-soft:        #e5e5e5;
+  --calendar-text:             #545454;
+  --calendar-text-soft:        #8b8b8b;
+  --calendar-blue:             #63c7ef;
+  --calendar-red:              #ff5353;
+  --calendar-yellow:           #efbb1c;
+  --calendar-slide-duration:   300ms;
+  --calendar-slide-easing:     cubic-bezier(0.32, 0, 0.18, 1);
+  --calendar-bloom-duration:   280ms;
+  --calendar-bloom-easing:     cubic-bezier(0.34, 1.2, 0.64, 1);
+  --calendar-crossfade-duration: 260ms;
+  --calendar-crossfade-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body, #root { margin: 0; }
+body { color: var(--calendar-text); }

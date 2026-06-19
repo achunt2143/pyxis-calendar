@@ -1,0 +1,12 @@
+/* ─── CalendarViewSwitcher ────────────────────────────────────────────────────
+   Bottom view-mode tab strip.
+──────────────────────────────────────────────────────────────────────────── */
+
+.calendar-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 12px;
+}
+
+.calendar-switcher__itemWrap { display: flex; }

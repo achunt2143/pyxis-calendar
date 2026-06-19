@@ -1,0 +1,228 @@
+/* ─── CalendarDayCanvas ───────────────────────────────────────────────────────
+   Day view heading, timeline, events, slide panes, and now bar.
+   Also covers the rail day-panel heading used in month view.
+──────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Rail day-panel heading (month view) ────────────────────────────────── */
+
+.calendar-month__railDayHeading {
+  flex: 0 0 auto;
+  margin-bottom: 14px;
+}
+
+.calendar-month__railDayTitle {
+  font-size: 26px;
+  font-weight: 200;
+  letter-spacing: 0.03em;
+  color: #5a5a5a;
+  line-height: 1;
+}
+
+.calendar-month__railDaySubtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  font-style: italic;
+  color: #888;
+}
+
+/* ─── Day canvas — full view ─────────────────────────────────────────────── */
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.calendar-day__headingWrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 30px;
+  flex: 0 0 auto;
+}
+
+.calendar-day__headingLeft {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.calendar-day__heading {
+  font-size: 58px;
+  line-height: 0.95;
+  font-weight: 200;
+  letter-spacing: 0.02em;
+  color: #5a5a5a;
+}
+
+.calendar-day__subheading {
+  margin-top: 8px;
+  font-size: 24px;
+  font-style: italic;
+  color: #666;
+}
+
+.calendar-day__headingActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding-top: 8px;
+}
+
+/* ─── Day canvas — week-col variant ──────────────────────────────────────── */
+
+.calendar-day--weekCol { overflow: hidden; }
+
+.calendar-day__headingWrap--weekCol {
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.calendar-day__heading--weekCol {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #666;
+  text-align: center;
+}
+
+.calendar-day__timeline--weekCol    { padding-left: 0; }
+.calendar-day__eventsLayer--weekCol { left: 0; top: 4px; }
+
+/* ─── Day canvas — timeline ──────────────────────────────────────────────── */
+
+.calendar-day__timeline {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-left: 58px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.calendar-day__timelineScroller {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  min-height: 0;
+}
+
+.calendar-day__row {
+  position: relative;
+  height: 88px;
+}
+
+.calendar-day__timeLabel {
+  position: absolute;
+  left: -58px;
+  top: -4px;
+  width: 42px;
+  font-size: 15px;
+  font-style: italic;
+  color: #707070;
+}
+
+.calendar-day__rowLine {
+  position: absolute;
+  inset: 0 0 auto 0;
+  top: 12px;
+  border-top: 1px dotted var(--calendar-line-soft);
+}
+
+.calendar-day__eventsLayer {
+  position: absolute;
+  left: 58px;
+  right: 0;
+  top: 8px;
+  bottom: 0;
+}
+
+/* ─── Events ─────────────────────────────────────────────────────────────── */
+
+.calendar-day__event {
+  position: absolute;
+  border-radius: 999px;
+  padding: 14px 24px 14px 34px;
+  color: white;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.calendar-day__event--blue   { background: var(--calendar-blue); }
+.calendar-day__event--red    { background: var(--calendar-red); }
+.calendar-day__event--yellow { background: var(--calendar-yellow); }
+
+.calendar-day__eventTitle {
+  font-size: 20px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.calendar-day__eventTitle--weekCol {
+  font-size: 9px;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 6px;
+  font-style: normal;
+}
+
+.calendar-day--weekCol .calendar-day__event {
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.calendar-day__eventSubtitle,
+.calendar-day__eventLocation {
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.calendar-day__eventLocation { margin-top: 4px; }
+
+/* ─── Day view slide panes ───────────────────────────────────────────────── */
+
+.calendar-day__slideViewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day__slidePane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.calendar-day__slideGhost { flex: 1 1 auto; }
+
+.calendar-day__slidePane--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-day__slidePane--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-day__slidePane--exit-left   { animation: slideOutToLeft   var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+.calendar-day__slidePane--exit-right  { animation: slideOutToRight  var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+
+/* ─── Now bar ────────────────────────────────────────────────────────────── */
+
+.calendar-day__nowBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 10;
+  transform: translateY(-50%);
+}

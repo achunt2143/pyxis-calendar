@@ -1,0 +1,104 @@
+/* ─── CalendarApp ─────────────────────────────────────────────────────────────
+   App shell layout, shared slide keyframes, responsive breakpoints,
+   and reduced-motion overrides.
+──────────────────────────────────────────────────────────────────────────── */
+
+@import './calendar.tokens.css';
+
+/* ─── App shell ──────────────────────────────────────────────────────────── */
+
+.calendar-appShell {
+  box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-appShell__frame {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-appShell__content {
+  display: grid;
+  grid-template-columns: 332px minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.calendar-appShell__railWrap,
+.calendar-appShell__mainWrap { height: 100%; min-height: 0; }
+
+.calendar-appShell__railInner,
+.calendar-appShell__mainInner {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-appShell__railInner {
+  padding: 22px 18px 18px;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+/* Month view: day canvas fills the rail — no overflow scroll, uses full height */
+.calendar-appShell__railInner--dayPanel {
+  padding: 22px 18px 18px;
+  overflow: hidden;
+}
+
+.calendar-appShell__mainInner {
+  padding: 26px 28px 16px 30px;
+}
+
+/* ─── Shared slide keyframes ─────────────────────────────────────────────── */
+/* Used by CalendarDayCanvas, CalendarMonthCanvas, and CalendarMonthRail.     */
+
+@keyframes slideInFromLeft  { from { transform: translateX(100%);  } to { transform: translateX(0); } }
+@keyframes slideInFromRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes slideOutToLeft   { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes slideOutToRight  { from { transform: translateX(0); } to { transform: translateX(100%);  } }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .calendar-appShell__content { grid-template-columns: 1fr; }
+  .calendar-day__heading      { font-size: 44px; }
+  .calendar-appShell__railInner--dayPanel { display: none; }
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-day__slidePane--enter-left,
+  .calendar-day__slidePane--enter-right,
+  .calendar-day__slidePane--exit-left,
+  .calendar-day__slidePane--exit-right,
+  .calendar-rail__slide--enter-left,
+  .calendar-rail__slide--enter-right,
+  .calendar-rail__slide--exit-left,
+  .calendar-rail__slide--exit-right,
+  .calendar-rail__dayPane--enter-left,
+  .calendar-rail__dayPane--enter-right,
+  .calendar-rail__dayPane--exit-left,
+  .calendar-rail__dayPane--exit-right,
+  .calendar-rail__crossfadeWrap--fading-to-day,
+  .calendar-rail__crossfadeWrap--fading-to-mini,
+  .calendar-month__slidePane--enter-left,
+  .calendar-month__slidePane--enter-right,
+  .calendar-month__slidePane--exit-left,
+  .calendar-month__slidePane--exit-right,
+  .calendar-month__grid--enter-left .calendar-month__cell,
+  .calendar-month__grid--enter-right .calendar-month__cell,
+  .calendar-week__col--enter,
+  .calendar-week__col--exit {
+    animation: none;
+  }
+}

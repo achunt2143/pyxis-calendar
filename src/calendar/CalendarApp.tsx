@@ -15,7 +15,7 @@ import {
   getDaySubheading,
   getMonthLabel,
 } from './calendarMonthUtils';
-import './calendar.css';
+import './CalendarApp.css';
 
 type SlideDir = 'left' | 'right';
 type WeekAnimState = 'enter' | 'exit' | 'idle';
@@ -74,26 +74,26 @@ export default function CalendarApp(): JSX.Element {
   const moreBtnRef                          = useRef<HTMLDivElement>(null);
   const [moreAnchor, setMoreAnchor]         = useState<DOMRect | null>(null);
 
-  // ─── Main day-view slide ──────────────────────────────────────────────────
+  // ─── Main day-view slide ────────────────────────────────────────────────────
   const prevKeyRef = useRef<string>(toDateKey(new Date(2026, 5, 19)));
   const [exitKey, setExitKey] = useState<string | null>(null);
   const [exitDir, setExitDir] = useState<SlideDir>('left');
 
-  // ─── Month-view slide ─────────────────────────────────────────────────────
+  // ─── Month-view slide ──────────────────────────────────────────────────
   const prevMonthKeyRef = useRef<string>('');
   const [monthSlideDir, setMonthSlideDir]   = useState<SlideDir | null>(null);
   const [monthExitKey, setMonthExitKey]     = useState<string | null>(null);
   const [monthExitDir, setMonthExitDir]     = useState<SlideDir>('left');
   const [displayedMonth, setDisplayedMonth] = useState<Date>(new Date(2026, 5, 1));
 
-  // ─── Rail panel crossfade state ───────────────────────────────────────────
-  // We track the "committed" rail mode with a short lag so both panels
+  // ─── Rail panel crossfade state ────────────────────────────────────────────
+  // We track the “committed” rail mode with a short lag so both panels
   // overlap during the crossfade.
   const [railMode, setRailMode]           = useState<'mini' | 'day'>(viewMode === 'month' ? 'day' : 'mini');
   const [railCrossfading, setRailCrossfading] = useState(false);
   const [railCrossfadeDir, setRailCrossfadeDir] = useState<'to-day' | 'to-mini'>('to-day');
 
-  // ─── Rail day-panel slide ─────────────────────────────────────────────────
+  // ─── Rail day-panel slide ────────────────────────────────────────────────
   const railPrevKeyRef   = useRef<string>(toDateKey(selectedDate));
   const [railExitKey,   setRailExitKey]  = useState<string | null>(null);
   const [railExitDir,   setRailExitDir]  = useState<SlideDir>('left');
@@ -118,7 +118,7 @@ export default function CalendarApp(): JSX.Element {
     [selectedDate]
   );
 
-  // ─── View transitions ──────────────────────────────────────────────────────
+  // ─── View transitions ───────────────────────────────────────────────────────
 
   function handleViewChange(next: CalendarViewMode): void {
     if (next === viewMode) return;
@@ -244,13 +244,11 @@ export default function CalendarApp(): JSX.Element {
 
   function handleRailPrev(): void {
     if (railMode === 'day') {
-      // navigate selected day backward
       const prev = new Date(selectedDate);
       prev.setDate(prev.getDate() - 1);
       slideRailDay(prev, selectedDate);
       setSelectedDate(prev);
     } else {
-      // navigate mini-month rail backward
       navigateMonth('right');
     }
   }
@@ -275,7 +273,6 @@ export default function CalendarApp(): JSX.Element {
         setSelectedDate(today);
       }
     } else {
-      // jump mini-month to today's month
       const sameMonth =
         today.getFullYear() === selectedDate.getFullYear() &&
         today.getMonth() === selectedDate.getMonth();
@@ -309,7 +306,7 @@ export default function CalendarApp(): JSX.Element {
 
   const isAtToday = isSameDay(selectedDate, TODAY);
 
-  // ─── Rail label ────────────────────────────────────────────────────────────
+  // ─── Rail label ───────────────────────────────────────────────────────────
   function getRailLabel(): string {
     if (railMode === 'day') {
       return `${getDayHeading(selectedDate)} — ${getDaySubheading(selectedDate)}`;

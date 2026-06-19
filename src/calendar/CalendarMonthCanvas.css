@@ -1,0 +1,131 @@
+/* ─── CalendarMonthCanvas ─────────────────────────────────────────────────────
+   Month view grid, cells, slide panes, and cell-enter animation.
+──────────────────────────────────────────────────────────────────────────── */
+
+.calendar-month__slideViewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-month__slidePane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.calendar-month__slideGhost { flex: 1 1 auto; }
+
+.calendar-month__slidePane--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-month__slidePane--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-month__slidePane--exit-left   { animation: slideOutToLeft   var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+.calendar-month__slidePane--exit-right  { animation: slideOutToRight  var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+
+@keyframes monthCellEnter {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.calendar-month__grid--enter-left .calendar-month__cell,
+.calendar-month__grid--enter-right .calendar-month__cell {
+  animation: monthCellEnter 220ms cubic-bezier(0.34, 1.1, 0.64, 1) var(--cell-delay, 0ms) both;
+}
+
+.calendar-month {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.calendar-month__weekdayRow {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 6px;
+  flex: 0 0 auto;
+}
+
+.calendar-month__weekdayLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-align: center;
+  color: var(--calendar-text-soft);
+  padding-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.calendar-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.calendar-month__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--calendar-text);
+  cursor: pointer;
+  padding: 6px 4px;
+  transition: background 160ms ease, color 160ms ease;
+  min-height: 0;
+}
+
+.calendar-month__cell:hover:not(.calendar-month__cell--selected):not(.calendar-month__cell--outOfMonth) {
+  background: rgba(0,0,0,0.045);
+}
+
+.calendar-month__cell--outOfMonth {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.calendar-month__cell--today .calendar-month__cellDate {
+  color: var(--mochi-primary, #63c7ef);
+  font-weight: 700;
+}
+
+.calendar-month__cell--selected {
+  background: var(--mochi-primary, #63c7ef);
+  color: #fff;
+}
+
+.calendar-month__cell--selected .calendar-month__cellDate { color: #fff; }
+
+.calendar-month__cell--selected .calendar-month__eventBadge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+.calendar-month__cellDate {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.calendar-month__eventBadge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(0,0,0,0.07);
+  color: var(--calendar-text-soft);
+  border-radius: 999px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}

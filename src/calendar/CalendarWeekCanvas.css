@@ -1,0 +1,53 @@
+/* ─── CalendarWeekCanvas ──────────────────────────────────────────────────────
+   Week view grid, column styles, and bloom enter/exit keyframes.
+──────────────────────────────────────────────────────────────────────────── */
+
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.calendar-week__col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.018);
+  will-change: transform, opacity;
+}
+
+.calendar-week__col--today {
+  background: rgba(99,199,239,0.08);
+  outline: 1px solid rgba(99,199,239,0.28);
+}
+
+.calendar-week__col--selected {
+  background: rgba(99,199,239,0.13);
+  outline: 1px solid rgba(99,199,239,0.45);
+}
+
+@keyframes weekColEnter {
+  from { transform: scaleX(0.05) scaleY(0.3); opacity: 0; }
+  to   { transform: scaleX(1)    scaleY(1);   opacity: 1; }
+}
+
+@keyframes weekColExit {
+  from { transform: scaleX(1)    scaleY(1);   opacity: 1; }
+  to   { transform: scaleX(0.05) scaleY(0.3); opacity: 0; }
+}
+
+.calendar-week__col--enter {
+  animation: weekColEnter var(--calendar-bloom-duration) var(--calendar-bloom-easing) var(--col-delay, 0ms) both;
+  transform-origin: center center;
+}
+
+.calendar-week__col--exit {
+  animation: weekColExit var(--calendar-bloom-duration) var(--calendar-bloom-easing) var(--col-delay, 0ms) both;
+  transform-origin: center center;
+  pointer-events: none;
+}
