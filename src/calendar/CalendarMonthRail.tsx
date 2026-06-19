@@ -1,4 +1,4 @@
-import React, { type JSX } from 'react';
+import React, { useRef, useState, useEffect, type JSX } from 'react';
 import { Divider } from 'remochi';
 import {
   buildMiniMonthGrid,
@@ -9,6 +9,8 @@ import {
 
 const WEEKDAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THR', 'FRI', 'SAT'];
 
+// ─── MiniMonth ────────────────────────────────────────────────────────────────
+
 interface MiniMonthProps {
   viewDate: Date;
   selectedDate: Date;
@@ -16,12 +18,7 @@ interface MiniMonthProps {
   onSelectDay: (day: CalendarDay) => void;
 }
 
-function MiniMonth({
-  viewDate,
-  selectedDate,
-  dayMetaMap,
-  onSelectDay
-}: MiniMonthProps): JSX.Element {
+function MiniMonth({ viewDate, selectedDate, dayMetaMap, onSelectDay }: MiniMonthProps): JSX.Element {
   const days = buildMiniMonthGrid(viewDate, selectedDate, dayMetaMap);
 
   return (
@@ -30,9 +27,7 @@ function MiniMonth({
 
       <div className="calendar-rail__weekdayRow">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="calendar-rail__weekday">
-            {label}
-          </div>
+          <div key={label} className="calendar-rail__weekday">{label}</div>
         ))}
       </div>
 
@@ -44,13 +39,11 @@ function MiniMonth({
 
           const className = [
             'calendar-rail__dayButton',
-            day.isSelected ? 'calendar-rail__dayButton--selected' : '',
-            day.isToday && !day.isSelected ? 'calendar-rail__dayButton--today' : '',
-            day.hasEvents ? 'calendar-rail__dayButton--hasEvents' : '',
-            day.isDisabled ? 'calendar-rail__dayButton--disabled' : ''
-          ]
-            .filter(Boolean)
-            .join(' ');
+            day.isSelected                      ? 'calendar-rail__dayButton--selected'  : '',
+            day.isToday && !day.isSelected      ? 'calendar-rail__dayButton--today'     : '',
+            day.hasEvents                       ? 'calendar-rail__dayButton--hasEvents' : '',
+            day.isDisabled                      ? 'calendar-rail__dayButton--disabled'  : ''
+          ].filter(Boolean).join(' ');
 
           return (
             <div key={day.key} className="calendar-rail__cellWrap">
@@ -76,6 +69,8 @@ function MiniMonth({
   );
 }
 
+// ─── Rail ─────────────────────────────────────────────────────────────────────
+
 export interface CalendarMonthRailProps {
   visibleMonth: Date;
   selectedDate: Date;
@@ -83,38 +78,85 @@ export interface CalendarMonthRailProps {
   onSelectDay: (day: CalendarDay) => void;
 }
 
+type SlideDir = 'left' | 'right' | null;
+
+function monthKey(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
 export default function CalendarMonthRail({
   visibleMonth,
   selectedDate,
   dayMetaMap,
-  onSelectDay
+  onSelectDay,
 }: CalendarMonthRailProps): JSX.Element {
-  const nextMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+  const prevMonthRef  = useRef<Date>(visibleMonth);
+  const [slideDir, setSlideDir]       = useState<SlideDir>(null);
+  const [exitMonth, setExitMonth]     = useState<Date | null>(null);
+  const [exitNextMonth, setExitNextMonth] = useState<Date | null>(null);
+
+  // Detect when visibleMonth changes and kick off slide
+  useEffect(() => {
+    const prev = prevMonthRef.current;
+    if (monthKey(prev) === monthKey(visibleMonth)) return;
+
+    const goingForward =
+      visibleMonth.getFullYear() > prev.getFullYear() ||
+      (visibleMonth.getFullYear() === prev.getFullYear() &&
+        visibleMonth.getMonth() > prev.getMonth());
+
+    const prevNext = new Date(prev.getFullYear(), prev.getMonth() + 1, 1);
+
+    setExitMonth(prev);
+    setExitNextMonth(prevNext);
+    setSlideDir(goingForward ? 'left' : 'right');
+    prevMonthRef.current = visibleMonth;
+
+    const id = window.setTimeout(() => {
+      setExitMonth(null);
+      setExitNextMonth(null);
+      setSlideDir(null);
+    }, 320);
+
+    return () => window.clearTimeout(id);
+  }, [visibleMonth]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentNext = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+
+  const enterClass = slideDir === 'left'
+    ? 'calendar-rail__slide calendar-rail__slide--enter-left'
+    : slideDir === 'right'
+      ? 'calendar-rail__slide calendar-rail__slide--enter-right'
+      : 'calendar-rail__slide';
+
+  const exitClass = slideDir === 'left'
+    ? 'calendar-rail__slide calendar-rail__slide--exit-left'
+    : 'calendar-rail__slide calendar-rail__slide--exit-right';
 
   return (
     <div className="calendar-rail">
-      <MiniMonth
-        viewDate={visibleMonth}
-        selectedDate={selectedDate}
-        dayMetaMap={dayMetaMap}
-        onSelectDay={onSelectDay}
-      />
+      <div className="calendar-rail__slideViewport">
 
-      <div className="calendar-rail__dividerWrap">
-        <Divider />
+        {/* Exiting pair */}
+        {exitMonth && (
+          <div key={`exit-${monthKey(exitMonth)}`} className={`calendar-rail__slidePane ${exitClass}`} aria-hidden="true">
+            <MiniMonth viewDate={exitMonth}     selectedDate={selectedDate} dayMetaMap={dayMetaMap} onSelectDay={onSelectDay} />
+            <div className="calendar-rail__dividerWrap"><Divider /></div>
+            <MiniMonth viewDate={exitNextMonth!} selectedDate={selectedDate} dayMetaMap={dayMetaMap} onSelectDay={onSelectDay} />
+          </div>
+        )}
+
+        {/* Entering pair */}
+        <div key={monthKey(visibleMonth)} className={`calendar-rail__slidePane ${enterClass}`}>
+          <MiniMonth viewDate={visibleMonth}  selectedDate={selectedDate} dayMetaMap={dayMetaMap} onSelectDay={onSelectDay} />
+          <div className="calendar-rail__dividerWrap"><Divider /></div>
+          <MiniMonth viewDate={currentNext}   selectedDate={selectedDate} dayMetaMap={dayMetaMap} onSelectDay={onSelectDay} />
+        </div>
+
       </div>
 
-      <MiniMonth
-        viewDate={nextMonth}
-        selectedDate={selectedDate}
-        dayMetaMap={dayMetaMap}
-        onSelectDay={onSelectDay}
-      />
-
       <div className="calendar-rail__footer">
-        <button type="button" className="calendar-rail__newEvent">
-          ( New Event )
-        </button>
+        <button type="button" className="calendar-rail__newEvent">( New Event )</button>
       </div>
     </div>
   );
