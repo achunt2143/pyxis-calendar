@@ -45,9 +45,17 @@ export default function CalendarApp(): JSX.Element {
   const moreBtnRef                          = useRef<HTMLDivElement>(null);
   const [moreAnchor, setMoreAnchor]         = useState<DOMRect | null>(null);
 
+  // Day-view slide state
   const prevKeyRef = useRef<string>(toDateKey(new Date(2026, 5, 19)));
   const [exitKey, setExitKey] = useState<string | null>(null);
   const [exitDir, setExitDir] = useState<SlideDir>('left');
+
+  // Month-view slide state
+  const prevMonthKeyRef = useRef<string>('');
+  const [monthSlideDir, setMonthSlideDir]     = useState<SlideDir | null>(null);
+  const [monthExitKey, setMonthExitKey]       = useState<string | null>(null);
+  const [monthExitDir, setMonthExitDir]       = useState<SlideDir>('left');
+  const [displayedMonth, setDisplayedMonth]   = useState<Date>(new Date(2026, 5, 1));
 
   const visibleMonth = useMemo(() =>
     new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
@@ -77,10 +85,23 @@ export default function CalendarApp(): JSX.Element {
     }
   }
 
-  // ─── Navigation ────────────────────────────────────────────────────────────
-  // Day   → ±1 day
-  // Week  → ±7 days
-  // Month → ±1 month (keeps day-of-month, clamps to last day)
+  // ─── Month navigation ──────────────────────────────────────────────────────
+
+  function navigateMonth(dir: SlideDir): void {
+    const delta = dir === 'left' ? 1 : -1;
+    const next  = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + delta, 1);
+
+    const exitMonthKey = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}`;
+    setMonthExitKey(exitMonthKey);
+    setMonthExitDir(dir);
+    setMonthSlideDir(dir);
+    setSelectedDate(next);
+    setDisplayedMonth(next);
+    prevMonthKeyRef.current = exitMonthKey;
+    window.setTimeout(() => setMonthExitKey(null), 320);
+  }
+
+  // ─── Day navigation ────────────────────────────────────────────────────────
 
   function handlePrev(): void {
     if (viewMode === 'week') {
@@ -88,8 +109,7 @@ export default function CalendarApp(): JSX.Element {
       prev.setDate(prev.getDate() - 7);
       setSelectedDate(prev);
     } else if (viewMode === 'month') {
-      const prev = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1);
-      setSelectedDate(prev);
+      navigateMonth('right');
     } else {
       const prev = new Date(selectedDate);
       prev.setDate(prev.getDate() - 1);
@@ -103,8 +123,7 @@ export default function CalendarApp(): JSX.Element {
       next.setDate(next.getDate() + 7);
       setSelectedDate(next);
     } else if (viewMode === 'month') {
-      const next = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
-      setSelectedDate(next);
+      navigateMonth('left');
     } else {
       const next = new Date(selectedDate);
       next.setDate(next.getDate() + 1);
@@ -124,7 +143,6 @@ export default function CalendarApp(): JSX.Element {
 
   function handleSelectDay(day: CalendarDay): void {
     if (viewMode === 'month') {
-      // In month view just update selection; day panel re-renders in place
       setSelectedDate(day.date);
     } else {
       const dir: SlideDir = day.date > selectedDate ? 'left' : 'right';
@@ -146,9 +164,11 @@ export default function CalendarApp(): JSX.Element {
     return getDayHeading(selectedDate);
   }
 
-  const dateKey    = toDateKey(selectedDate);
-  const isWeekView = viewMode === 'week';
-  const isDayView  = viewMode === 'day';
+  const dateKey      = toDateKey(selectedDate);
+  const isWeekView   = viewMode === 'week';
+  const isDayView    = viewMode === 'day';
+  const isMonthView  = viewMode === 'month';
+  const monthKey     = `${visibleMonth.getFullYear()}-${visibleMonth.getMonth()}`;
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -157,10 +177,28 @@ export default function CalendarApp(): JSX.Element {
       <div className="calendar-appShell__frame">
         <div className="calendar-appShell__content">
 
-          {/* Rail — hidden in month view (day canvas is inside the canvas itself) */}
-          {viewMode !== 'month' && (
-            <div className="calendar-appShell__railWrap">
-              <Panel>
+          {/* ─── Left rail ─── */}
+          <div className="calendar-appShell__railWrap">
+            <Panel>
+              {isMonthView ? (
+                // Month view: show day canvas for selected date
+                <div className="calendar-appShell__railInner calendar-appShell__railInner--dayPanel">
+                  <div className="calendar-month__railDayHeading">
+                    <div className="calendar-month__railDayTitle">
+                      {getDayHeading(selectedDate)}
+                    </div>
+                    <div className="calendar-month__railDaySubtitle">
+                      {getDaySubheading(selectedDate)}
+                    </div>
+                  </div>
+                  <CalendarDayCanvas
+                    selectedDate={selectedDate}
+                    events={events}
+                    variant="day"
+                  />
+                </div>
+              ) : (
+                // Day / week view: normal mini-calendar rail
                 <div className="calendar-appShell__railInner">
                   <CalendarMonthRail
                     visibleMonth={visibleMonth}
@@ -169,19 +207,16 @@ export default function CalendarApp(): JSX.Element {
                     onSelectDay={handleSelectDay}
                   />
                 </div>
-              </Panel>
-            </div>
-          )}
+              )}
+            </Panel>
+          </div>
 
-          {/* Main canvas — spans full width in month view */}
-          <div
-            className="calendar-appShell__mainWrap"
-            style={viewMode === 'month' ? { gridColumn: '1 / -1' } : undefined}
-          >
+          {/* ─── Main canvas ─── */}
+          <div className="calendar-appShell__mainWrap">
             <Panel>
               <div className="calendar-appShell__mainInner">
 
-                {/* ─── Single shared header ─── */}
+                {/* Single shared header */}
                 <div className="calendar-day__headingWrap">
                   <div className="calendar-day__headingLeft">
                     <div className="calendar-day__heading">{getHeading()}</div>
@@ -191,7 +226,6 @@ export default function CalendarApp(): JSX.Element {
                       </div>
                     )}
                   </div>
-
                   <div className="calendar-day__headingActions">
                     <Button onClick={handlePrev}>‹</Button>
                     <Button onClick={handleNext}>›</Button>
@@ -208,7 +242,7 @@ export default function CalendarApp(): JSX.Element {
                   </div>
                 </div>
 
-                {/* ─── Canvas area ─── */}
+                {/* Canvas area */}
                 {isDayView && (
                   <div className="calendar-day__slideViewport">
                     {exitKey && exitKey !== dateKey && (
@@ -244,13 +278,35 @@ export default function CalendarApp(): JSX.Element {
                   />
                 )}
 
-                {viewMode === 'month' && (
-                  <CalendarMonthCanvas
-                    visibleMonth={visibleMonth}
-                    selectedDate={selectedDate}
-                    dayMetaMap={demoDayMeta}
-                    onSelectDay={handleSelectDay}
-                  />
+                {isMonthView && (
+                  <div className="calendar-month__slideViewport">
+                    {/* Exiting month grid */}
+                    {monthExitKey && monthExitKey !== monthKey && (
+                      <div
+                        key={`exit-${monthExitKey}`}
+                        className={`calendar-month__slidePane calendar-month__slidePane--exit-${
+                          monthExitDir === 'left' ? 'left' : 'right'
+                        }`}
+                      >
+                        <div className="calendar-month__slideGhost" />
+                      </div>
+                    )}
+                    {/* Entering month grid */}
+                    <div
+                      key={monthKey}
+                      className={`calendar-month__slidePane calendar-month__slidePane--enter-${
+                        monthSlideDir === 'left' ? 'left' : 'right'
+                      }`}
+                    >
+                      <CalendarMonthCanvas
+                        visibleMonth={visibleMonth}
+                        selectedDate={selectedDate}
+                        dayMetaMap={demoDayMeta}
+                        onSelectDay={handleSelectDay}
+                        slideDir={monthSlideDir}
+                      />
+                    </div>
+                  </div>
                 )}
 
                 <CalendarViewSwitcher value={viewMode} onChange={handleViewChange} />
