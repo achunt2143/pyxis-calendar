@@ -142,7 +142,7 @@ export default function CalendarApp(): JSX.Element {
       setWeekAnimState('enter');
       setViewMode(next);
       window.setTimeout(() => setWeekAnimState('idle'), 350);
-    } else if (viewMode === 'week' && next !== 'week') {
+    } else if (viewMode === 'week') {
       setOriginColIndex(getColIndex(selectedDate));
       setWeekAnimState('exit');
       window.setTimeout(() => { setViewMode(next); setWeekAnimState('idle'); }, 350);
