@@ -115,11 +115,11 @@ export default function CalendarDayCanvas({
         </div>
 
         <div className="calendar-day__headingActions">
-          <Button content="‹" onClick={onPrevDay} />
-          <Button content="›" onClick={onNextDay} />
-          <Button content="+ New event" variant="affirmative" onClick={() => {}} />
+          <Button onClick={onPrevDay}>‹</Button>
+          <Button onClick={onNextDay}>›</Button>
+          <Button variant="affirmative" onClick={() => {}}>+ New event</Button>
           <div ref={moreBtnRef}>
-            <Button content="···" onClick={handleMoreClick} />
+            <Button onClick={handleMoreClick}>···</Button>
           </div>
           <PopupPanel
             isOpen={moreOpen}
