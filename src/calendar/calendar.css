@@ -16,7 +16,6 @@
 }
 
 html, body, #root { margin: 0; }
-
 body { color: var(--calendar-text); }
 
 /* ─── App shell ──────────────────────────────────────────────────────────── */
@@ -60,6 +59,12 @@ body { color: var(--calendar-text); }
   padding: 22px 18px 18px;
   max-height: 100vh;
   overflow-y: auto;
+}
+
+/* Month view: day canvas fills the rail — no overflow scroll, uses full height */
+.calendar-appShell__railInner--dayPanel {
+  padding: 22px 18px 18px;
+  overflow: hidden;
 }
 
 .calendar-appShell__mainInner {
@@ -179,6 +184,34 @@ body { color: var(--calendar-text); }
   cursor: pointer;
 }
 
+/* ─── Month view — rail day panel heading ───────────────────────────────── */
+/*
+  In month view the left rail shows the day canvas for the selected date.
+  We render a compact heading above it (day name + date) since the main
+  header shows the month name. The internal CalendarDayCanvas heading
+  block is already stripped (variant=day never renders it anymore).
+*/
+
+.calendar-month__railDayHeading {
+  flex: 0 0 auto;
+  margin-bottom: 14px;
+}
+
+.calendar-month__railDayTitle {
+  font-size: 26px;
+  font-weight: 200;
+  letter-spacing: 0.03em;
+  color: #5a5a5a;
+  line-height: 1;
+}
+
+.calendar-month__railDaySubtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  font-style: italic;
+  color: #888;
+}
+
 /* ─── Day canvas — full view ─────────────────────────────────────────────── */
 
 .calendar-day {
@@ -229,9 +262,7 @@ body { color: var(--calendar-text); }
 
 /* ─── Day canvas — week-col variant ─────────────────────────────────────── */
 
-.calendar-day--weekCol {
-  overflow: hidden;
-}
+.calendar-day--weekCol { overflow: hidden; }
 
 .calendar-day__headingWrap--weekCol {
   margin-bottom: 10px;
@@ -246,14 +277,8 @@ body { color: var(--calendar-text); }
   text-align: center;
 }
 
-.calendar-day__timeline--weekCol {
-  padding-left: 0;
-}
-
-.calendar-day__eventsLayer--weekCol {
-  left: 0;
-  top: 4px;
-}
+.calendar-day__timeline--weekCol { padding-left: 0; }
+.calendar-day__eventsLayer--weekCol { left: 0; top: 4px; }
 
 /* ─── Day canvas — timeline ──────────────────────────────────────────────── */
 
@@ -272,8 +297,6 @@ body { color: var(--calendar-text); }
   height: 100%;
   min-height: 0;
 }
-
-.calendar-day__timeline { position: relative; }
 
 .calendar-day__row {
   position: relative;
@@ -337,7 +360,6 @@ body { color: var(--calendar-text); }
   font-style: normal;
 }
 
-/* override pill padding in week col */
 .calendar-day--weekCol .calendar-day__event {
   padding: 2px 4px;
   border-radius: 4px;
@@ -374,10 +396,10 @@ body { color: var(--calendar-text); }
 
 .calendar-day__slideGhost { flex: 1 1 auto; }
 
-@keyframes slideInFromLeft  { from { transform: translateX(100%); }  to { transform: translateX(0); } }
+@keyframes slideInFromLeft  { from { transform: translateX(100%);  } to { transform: translateX(0); } }
 @keyframes slideInFromRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 @keyframes slideOutToLeft   { from { transform: translateX(0); } to { transform: translateX(-100%); } }
-@keyframes slideOutToRight  { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes slideOutToRight  { from { transform: translateX(0); } to { transform: translateX(100%);  } }
 
 .calendar-day__slidePane--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
 .calendar-day__slidePane--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
@@ -415,8 +437,6 @@ body { color: var(--calendar-text); }
   outline: 1px solid rgba(99,199,239,0.45);
 }
 
-/* ─── Week bloom animation ───────────────────────────────────────────────── */
-
 @keyframes weekColEnter {
   from { transform: scaleX(0.05) scaleY(0.3); opacity: 0; }
   to   { transform: scaleX(1) scaleY(1);       opacity: 1; }
@@ -439,45 +459,57 @@ body { color: var(--calendar-text); }
 }
 
 /* ─── Month view ─────────────────────────────────────────────────────────── */
-
 /*
-  Split layout:
-    Left  (300px fixed) — CalendarDayCanvas for the selected date
-    Right (flex 1)      — Full month grid
+  Main panel layout:
+    weekday header row (fixed)
+    6-row × 7-col grid (flex 1, fills remaining height)
+
+  Navigation slides the whole grid left/right (same pattern as day view).
+  Individual cells stagger-fade-scale in via --cell-delay.
 */
 
-.calendar-month {
-  display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 24px;
+.calendar-month__slideViewport {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-}
-
-/* ── Left panel: day canvas ── */
-
-.calendar-month__dayPanel {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  border-right: 1px solid var(--calendar-line-soft);
-  padding-right: 24px;
 }
 
-/* Strip the day canvas heading inside month view — heading lives in CalendarApp */
-.calendar-month__dayPanel .calendar-day__headingWrap {
-  display: none;
-}
-
-/* ── Right panel: month grid ── */
-
-.calendar-month__gridPanel {
+.calendar-month__slidePane {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
+  will-change: transform;
+}
+
+.calendar-month__slideGhost { flex: 1 1 auto; }
+
+.calendar-month__slidePane--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-month__slidePane--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-month__slidePane--exit-left   { animation: slideOutToLeft   var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+.calendar-month__slidePane--exit-right  { animation: slideOutToRight  var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+
+/* First entry (no slide direction yet): cells fade+scale in with stagger */
+@keyframes monthCellEnter {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.calendar-month__grid--enter-left .calendar-month__cell,
+.calendar-month__grid--enter-right .calendar-month__cell {
+  animation: monthCellEnter 220ms cubic-bezier(0.34, 1.1, 0.64, 1) var(--cell-delay, 0ms) both;
+}
+
+/* ── Outer container (weekday row + grid) ── */
+
+.calendar-month {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
 }
 
 .calendar-month__weekdayRow {
@@ -507,7 +539,7 @@ body { color: var(--calendar-text); }
   min-height: 0;
 }
 
-/* ── Month cell ── */
+/* ── Cells ── */
 
 .calendar-month__cell {
   position: relative;
@@ -545,9 +577,7 @@ body { color: var(--calendar-text); }
   color: #fff;
 }
 
-.calendar-month__cell--selected .calendar-month__cellDate {
-  color: #fff;
-}
+.calendar-month__cell--selected .calendar-month__cellDate { color: #fff; }
 
 .calendar-month__cell--selected .calendar-month__eventBadge {
   background: rgba(255,255,255,0.25);
@@ -598,8 +628,7 @@ body { color: var(--calendar-text); }
 @media (max-width: 1100px) {
   .calendar-appShell__content { grid-template-columns: 1fr; }
   .calendar-day__heading      { font-size: 44px; }
-  .calendar-month             { grid-template-columns: 1fr; }
-  .calendar-month__dayPanel   { display: none; }
+  .calendar-appShell__railInner--dayPanel { display: none; }
 }
 
 /* ─── Reduced motion ─────────────────────────────────────────────────────── */
@@ -609,6 +638,12 @@ body { color: var(--calendar-text); }
   .calendar-day__slidePane--enter-right,
   .calendar-day__slidePane--exit-left,
   .calendar-day__slidePane--exit-right,
+  .calendar-month__slidePane--enter-left,
+  .calendar-month__slidePane--enter-right,
+  .calendar-month__slidePane--exit-left,
+  .calendar-month__slidePane--exit-right,
+  .calendar-month__grid--enter-left .calendar-month__cell,
+  .calendar-month__grid--enter-right .calendar-month__cell,
   .calendar-week__col--enter,
   .calendar-week__col--exit {
     animation: none;
