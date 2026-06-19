@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useEffect, useMemo, useRef, useState, type JSX } from 'react';
-import { NubbinDivider } from 'remochi';
+import { Divider, NubbinDivider } from 'remochi';
 import {
   getEventHeight,
   getEventTop,
@@ -128,7 +128,7 @@ export default function CalendarDayCanvas({
 
               {shouldShowNowBar && (
                 <div className="calendar-day__nowBar" style={{ top: `${timeTop}px` }}>
-                  <NubbinDivider side="bottom" />
+                  {isWeekCol ? <Divider /> : <NubbinDivider side="bottom" />}
                 </div>
               )}
 
