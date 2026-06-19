@@ -204,8 +204,17 @@ body {
 }
 
 .calendar-day__headingWrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 30px;
   flex: 0 0 auto;
+}
+
+.calendar-day__headingLeft {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .calendar-day__heading {
@@ -221,6 +230,14 @@ body {
   font-size: 24px;
   font-style: italic;
   color: #666;
+}
+
+.calendar-day__headingActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding-top: 8px;
 }
 
 .calendar-day__timeline {

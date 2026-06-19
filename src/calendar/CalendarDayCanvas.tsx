@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useEffect, useMemo, useRef, useState, type JSX } from 'react';
-import { NubbinDivider } from 'remochi';
+import { NubbinDivider, Button, PopupPanel } from 'remochi';
 import {
   getDayHeading,
   getDaySubheading,
@@ -13,6 +13,8 @@ import {
 interface CalendarDayCanvasProps {
   selectedDate: Date;
   events: CalendarEvent[];
+  onPrevDay: () => void;
+  onNextDay: () => void;
 }
 
 function getEventClassName(color: CalendarEvent['color']): string {
@@ -37,15 +39,31 @@ function getCurrentTimeTop(hours: number[], rowHeight: number): number {
   return ((currentHour - firstHour) + currentMinute / 60) * rowHeight;
 }
 
+const MORE_ACTIONS = [
+  { label: 'Settings',              onClick: () => {} },
+  { label: 'Connectors',            onClick: () => {} },
+  { label: 'Notifications',         onClick: () => {} },
+  { label: 'Import events',         onClick: () => {} },
+  { label: 'Export events',         onClick: () => {} },
+  { label: 'Sharing & permissions', onClick: () => {} },
+  { label: 'Keyboard shortcuts',    onClick: () => {} },
+  { label: 'About',                 onClick: () => {} },
+];
+
 export default function CalendarDayCanvas({
   selectedDate,
-  events
+  events,
+  onPrevDay,
+  onNextDay
 }: CalendarDayCanvasProps): JSX.Element {
   const hours = useMemo(() => getHours(), []);
   const rowHeight = 88;
   const timelineHeight = hours.length * rowHeight;
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [timeTop, setTimeTop] = useState(() => getCurrentTimeTop(hours, rowHeight));
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreBtnRef = useRef<HTMLDivElement>(null);
+  const [moreAnchor, setMoreAnchor] = useState<DOMRect | null>(null);
 
   const shouldShowNowBar = isSameDay(selectedDate, new Date());
 
@@ -82,11 +100,34 @@ export default function CalendarDayCanvas({
     return () => window.clearInterval(intervalId);
   }, [shouldShowNowBar, hours]);
 
+  function handleMoreClick(): void {
+    const rect = moreBtnRef.current?.getBoundingClientRect() ?? null;
+    setMoreAnchor(rect);
+    setMoreOpen((o) => !o);
+  }
+
   return (
     <>
       <div className="calendar-day__headingWrap">
-        <div className="calendar-day__heading">{getDayHeading(selectedDate)}</div>
-        <div className="calendar-day__subheading">{getDaySubheading(selectedDate)}</div>
+        <div className="calendar-day__headingLeft">
+          <div className="calendar-day__heading">{getDayHeading(selectedDate)}</div>
+          <div className="calendar-day__subheading">{getDaySubheading(selectedDate)}</div>
+        </div>
+
+        <div className="calendar-day__headingActions">
+          <Button content="‹" onClick={onPrevDay} />
+          <Button content="›" onClick={onNextDay} />
+          <Button content="+ New event" variant="affirmative" onClick={() => {}} />
+          <div ref={moreBtnRef}>
+            <Button content="···" onClick={handleMoreClick} />
+          </div>
+          <PopupPanel
+            isOpen={moreOpen}
+            onClose={() => setMoreOpen(false)}
+            anchorRect={moreAnchor}
+            actions={MORE_ACTIONS}
+          />
+        </div>
       </div>
 
       <div className="calendar-day" ref={scrollerRef}>
