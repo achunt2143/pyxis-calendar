@@ -63,6 +63,31 @@ export function getDaySubheading(date: Date): string {
   return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
+/** Returns the Sunday that starts the week containing `date`. */
+export function getWeekStart(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
+
+/** Returns all 7 days of the week containing `date`, starting Sunday. */
+export function getWeekDays(date: Date): Date[] {
+  const start = getWeekStart(date);
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+}
+
+/** "Week of June 15, 2026" */
+export function getWeekHeading(date: Date): string {
+  const start = getWeekStart(date);
+  return 'Week of ' + start.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+/** Column heading inside the week grid: "Mon 15" */
+export function getWeekColHeading(date: Date): string {
+  const weekday = date.toLocaleDateString(undefined, { weekday: 'short' });
+  return `${weekday} ${date.getDate()}`;
+}
+
 export function buildMonthGrid(viewDate: Date, selectedDate: Date, dayMetaMap: Record<string, CalendarDayMetadata> = {}): CalendarDay[] {
   const firstOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
   const firstGridDate = addDays(firstOfMonth, -firstOfMonth.getDay());
@@ -108,6 +133,15 @@ export function getEventTop(hour: number, startHour: number): number {
 
 export function getEventHeight(startHour: number, endHour: number): number {
   return Math.max((endHour - startHour) * 88 - 8, 48);
+}
+
+// Week-view column uses a smaller row height
+export function getEventTopCompact(hour: number, startHour: number, rowHeight: number): number {
+  return (startHour - hour) * rowHeight;
+}
+
+export function getEventHeightCompact(startHour: number, endHour: number, rowHeight: number): number {
+  return Math.max((endHour - startHour) * rowHeight - 4, 20);
 }
 
 export const demoDayMeta: Record<string, CalendarDayMetadata> = {

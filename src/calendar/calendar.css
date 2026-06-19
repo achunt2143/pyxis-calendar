@@ -11,17 +11,15 @@
   --calendar-yellow: #efbb1c;
   --calendar-slide-duration: 300ms;
   --calendar-slide-easing: cubic-bezier(0.32, 0, 0.18, 1);
+  --calendar-bloom-duration: 280ms;
+  --calendar-bloom-easing: cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
-html, body, #root {
-  margin: 0;
-}
+html, body, #root { margin: 0; }
 
-body {
-  color: var(--calendar-text);
-}
+body { color: var(--calendar-text); }
 
-/* ─── App shell ─────────────────────────────────────────────── */
+/* ─── App shell ──────────────────────────────────────────────────────────── */
 
 .calendar-appShell {
   box-sizing: border-box;
@@ -48,10 +46,7 @@ body {
 }
 
 .calendar-appShell__railWrap,
-.calendar-appShell__mainWrap {
-  height: 100%;
-  min-height: 0;
-}
+.calendar-appShell__mainWrap { height: 100%; min-height: 0; }
 
 .calendar-appShell__railInner,
 .calendar-appShell__mainInner {
@@ -71,11 +66,9 @@ body {
   padding: 26px 28px 16px 30px;
 }
 
-/* ─── Month rail ─────────────────────────────────────────────── */
+/* ─── Month rail ─────────────────────────────────────────────────────────── */
 
-.calendar-rail__monthBlock {
-  margin-bottom: 10px;
-}
+.calendar-rail__monthBlock  { margin-bottom: 10px; }
 
 .calendar-rail__monthLabel {
   font-size: 19px;
@@ -90,9 +83,7 @@ body {
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
-.calendar-rail__weekdayRow {
-  margin-bottom: 8px;
-}
+.calendar-rail__weekdayRow { margin-bottom: 8px; }
 
 .calendar-rail__weekday {
   font-size: 12px;
@@ -101,15 +92,10 @@ body {
   letter-spacing: 0.03em;
 }
 
-.calendar-rail__grid {
-  gap: 4px;
-}
+.calendar-rail__grid { gap: 4px; }
 
 .calendar-rail__cellWrap,
-.calendar-rail__emptyCell {
-  min-width: 0;
-  min-height: 32px;
-}
+.calendar-rail__emptyCell { min-width: 0; min-height: 32px; }
 
 .calendar-rail__emptyCell {
   visibility: hidden;
@@ -133,7 +119,7 @@ body {
 }
 
 .calendar-rail__dayButton:hover:not(:disabled):not(.calendar-rail__dayButton--selected) {
-  background: rgba(0, 0, 0, 0.045);
+  background: rgba(0,0,0,0.045);
 }
 
 .calendar-rail__dayButton--selected {
@@ -166,7 +152,7 @@ body {
 }
 
 .calendar-rail__dayButton--selected .calendar-rail__eventDot {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255,255,255,0.95);
   opacity: 1;
 }
 
@@ -181,15 +167,8 @@ body {
   background: var(--mochi-primary, #63c7ef);
 }
 
-.calendar-rail__dividerWrap {
-  padding-top: 8px;
-  padding-bottom: 24px;
-}
-
-.calendar-rail__footer {
-  margin-top: auto;
-  padding-top: 20px;
-}
+.calendar-rail__dividerWrap  { padding-top: 8px; padding-bottom: 24px; }
+.calendar-rail__footer       { margin-top: auto; padding-top: 20px; }
 
 .calendar-rail__newEvent {
   border: 0;
@@ -200,7 +179,7 @@ body {
   cursor: pointer;
 }
 
-/* ─── Day canvas ─────────────────────────────────────────────── */
+/* ─── Day canvas — full view ─────────────────────────────────────────────── */
 
 .calendar-day {
   display: flex;
@@ -248,6 +227,36 @@ body {
   padding-top: 8px;
 }
 
+/* ─── Day canvas — week-col variant ─────────────────────────────────────── */
+
+.calendar-day--weekCol {
+  overflow: hidden;
+}
+
+.calendar-day__headingWrap--weekCol {
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.calendar-day__heading--weekCol {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #666;
+  text-align: center;
+}
+
+.calendar-day__timeline--weekCol {
+  padding-left: 0;
+}
+
+.calendar-day__eventsLayer--weekCol {
+  left: 0;
+  top: 4px;
+}
+
+/* ─── Day canvas — timeline ──────────────────────────────────────────────── */
+
 .calendar-day__timeline {
   position: relative;
   flex: 1 1 auto;
@@ -264,9 +273,7 @@ body {
   min-height: 0;
 }
 
-.calendar-day__timeline {
-  position: relative;
-}
+.calendar-day__timeline { position: relative; }
 
 .calendar-day__row {
   position: relative;
@@ -320,6 +327,22 @@ body {
   margin-bottom: 6px;
 }
 
+.calendar-day__eventTitle--weekCol {
+  font-size: 9px;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 6px;
+  font-style: normal;
+}
+
+/* override pill padding in week col */
+.calendar-day--weekCol .calendar-day__event {
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
 .calendar-day__eventSubtitle,
 .calendar-day__eventLocation {
   font-size: 14px;
@@ -328,17 +351,15 @@ body {
   opacity: 0.95;
 }
 
-.calendar-day__eventLocation {
-  margin-top: 4px;
-}
+.calendar-day__eventLocation { margin-top: 4px; }
 
-/* ─── Slide animation ────────────────────────────────────────── */
+/* ─── Day view slide animation ───────────────────────────────────────────── */
 
 .calendar-day__slideViewport {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;   /* clips the sliding panes */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -351,63 +372,100 @@ body {
   will-change: transform;
 }
 
-/* Ghost — just a transparent fill so the outgoing pane has a physical shape */
-.calendar-day__slideGhost {
+.calendar-day__slideGhost { flex: 1 1 auto; }
+
+@keyframes slideInFromLeft  { from { transform: translateX(100%); }  to { transform: translateX(0); } }
+@keyframes slideInFromRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes slideOutToLeft   { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes slideOutToRight  { from { transform: translateX(0); } to { transform: translateX(100%); } }
+
+.calendar-day__slidePane--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-day__slidePane--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-day__slidePane--exit-left   { animation: slideOutToLeft   var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+.calendar-day__slidePane--exit-right  { animation: slideOutToRight  var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+
+/* ─── Week view ──────────────────────────────────────────────────────────── */
+
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
   flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* Enter animations */
-@keyframes slideInFromLeft {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+.calendar-week__col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.018);
+  will-change: transform, opacity;
 }
 
-@keyframes slideInFromRight {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
+.calendar-week__col--today {
+  background: rgba(99,199,239,0.08);
+  outline: 1px solid rgba(99,199,239,0.28);
 }
 
-/* Exit animations */
-@keyframes slideOutToLeft {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
+.calendar-week__col--selected {
+  background: rgba(99,199,239,0.13);
+  outline: 1px solid rgba(99,199,239,0.45);
 }
 
-@keyframes slideOutToRight {
-  from { transform: translateX(0); }
-  to   { transform: translateX(100%); }
-}
+/* ─── Week bloom animation ───────────────────────────────────────────────── */
+/*
+  Each column grows/shrinks from/to its center.
+  The origin column has delay=0 and blooms first;
+  adjacent columns follow with staggered delay via --col-delay.
+*/
 
-/* next day → new content enters from right, old exits to left */
-.calendar-day__slidePane--enter-left {
-  animation: slideInFromLeft var(--calendar-slide-duration) var(--calendar-slide-easing) both;
-}
-
-/* prev day → new content enters from left, old exits to right */
-.calendar-day__slidePane--enter-right {
-  animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both;
-}
-
-.calendar-day__slidePane--exit-left {
-  animation: slideOutToLeft var(--calendar-slide-duration) var(--calendar-slide-easing) both;
-  pointer-events: none;
-}
-
-.calendar-day__slidePane--exit-right {
-  animation: slideOutToRight var(--calendar-slide-duration) var(--calendar-slide-easing) both;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .calendar-day__slidePane--enter-left,
-  .calendar-day__slidePane--enter-right,
-  .calendar-day__slidePane--exit-left,
-  .calendar-day__slidePane--exit-right {
-    animation: none;
+@keyframes weekColEnter {
+  from {
+    transform: scaleX(0.05) scaleY(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
   }
 }
 
-/* ─── View switcher ──────────────────────────────────────────── */
+@keyframes weekColExit {
+  from {
+    transform: scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(0.05) scaleY(0.3);
+    opacity: 0;
+  }
+}
+
+.calendar-week__col--enter {
+  animation:
+    weekColEnter
+    var(--calendar-bloom-duration)
+    var(--calendar-bloom-easing)
+    var(--col-delay, 0ms)
+    both;
+  transform-origin: center center;
+}
+
+.calendar-week__col--exit {
+  animation:
+    weekColExit
+    var(--calendar-bloom-duration)
+    var(--calendar-bloom-easing)
+    var(--col-delay, 0ms)
+    both;
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+/* ─── View switcher ──────────────────────────────────────────────────────── */
 
 .calendar-switcher {
   display: flex;
@@ -416,11 +474,9 @@ body {
   padding-top: 12px;
 }
 
-.calendar-switcher__itemWrap {
-  display: flex;
-}
+.calendar-switcher__itemWrap { display: flex; }
 
-/* ─── Now bar ────────────────────────────────────────────────── */
+/* ─── Now bar ────────────────────────────────────────────────────────────── */
 
 .calendar-day__nowBar {
   position: absolute;
@@ -431,14 +487,22 @@ body {
   transform: translateY(-50%);
 }
 
-/* ─── Responsive ─────────────────────────────────────────────── */
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 1100px) {
-  .calendar-appShell__content {
-    grid-template-columns: 1fr;
-  }
+  .calendar-appShell__content { grid-template-columns: 1fr; }
+  .calendar-day__heading      { font-size: 44px; }
+}
 
-  .calendar-day__heading {
-    font-size: 44px;
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-day__slidePane--enter-left,
+  .calendar-day__slidePane--enter-right,
+  .calendar-day__slidePane--exit-left,
+  .calendar-day__slidePane--exit-right,
+  .calendar-week__col--enter,
+  .calendar-week__col--exit {
+    animation: none;
   }
 }
