@@ -1,11 +1,4 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type JSX
-} from 'react';
+import React, { useLayoutEffect, useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { NubbinDivider } from 'remochi';
 import {
   getDayHeading,
@@ -54,33 +47,35 @@ export default function CalendarDayCanvas({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [timeTop, setTimeTop] = useState(() => getCurrentTimeTop(hours, rowHeight));
 
-  const today = new Date();
-  const shouldShowNowBar = isSameDay(selectedDate, today);
+  const shouldShowNowBar = isSameDay(selectedDate, new Date());
 
   useLayoutEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    if (!shouldShowNowBar) {
-      scroller.scrollTop = 0;
-      return;
-    }
 
-    const firstHour = hours[0];
-    const currentHour = new Date().getHours();
-    const targetHour = Math.max(firstHour, currentHour - 1);
-    const targetTop = (targetHour - firstHour) * rowHeight;
-    const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+    const applyScroll = () => {
+      if (!shouldShowNowBar) {
+        scroller.scrollTop = 0;
+        return;
+      }
 
-    scroller.scrollTop = Math.min(targetTop, maxScrollTop);
-  }, [selectedDate, hours]);
+      const firstHour = hours[0];
+      const currentHour = new Date().getHours();
+      const targetHour = Math.max(firstHour, currentHour - 1);
+      const targetTop = (targetHour - firstHour) * rowHeight;
+      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+
+      scroller.scrollTop = Math.min(targetTop, maxScrollTop);
+    };
+
+    const id = window.requestAnimationFrame(applyScroll);
+    return () => window.cancelAnimationFrame(id);
+  }, [selectedDate, shouldShowNowBar, hours]);
 
   useEffect(() => {
     if (!shouldShowNowBar) return;
 
-    const tick = () => {
-      setTimeTop(getCurrentTimeTop(hours, rowHeight));
-    };
-
+    const tick = () => setTimeTop(getCurrentTimeTop(hours, rowHeight));
     tick();
 
     const intervalId = window.setInterval(tick, 60_000);
@@ -94,13 +89,10 @@ export default function CalendarDayCanvas({
         <div className="calendar-day__subheading">{getDaySubheading(selectedDate)}</div>
       </div>
 
-      <div className="calendar-day">
+      <div className="calendar-day" ref={scrollerRef}>
         <div className="calendar-day__timelineShell">
-          <div className="calendar-day__timelineScroller" ref={scrollerRef}>
-            <div
-              className="calendar-day__timeline"
-              style={{ minHeight: `${timelineHeight}px` }}
-            >
+          <div className="calendar-day__timelineScroller">
+            <div className="calendar-day__timeline" style={{ minHeight: `${timelineHeight}px` }}>
               {hours.map((hour) => (
                 <div key={hour} className="calendar-day__row">
                   <div className="calendar-day__timeLabel">{formatHour(hour)}</div>
@@ -109,13 +101,8 @@ export default function CalendarDayCanvas({
               ))}
 
               {shouldShowNowBar ? (
-                <div
-                  className="calendar-day__nowBar"
-                  style={{ top: `${timeTop}px` }}
-                >
-                  <NubbinDivider
-                    side="bottom"
-                  />
+                <div className="calendar-day__nowBar" style={{ top: `${timeTop}px` }}>
+                  <NubbinDivider side="bottom" />
                 </div>
               ) : null}
 
