@@ -27,7 +27,7 @@ body {
 }
 
 .calendar-appShell__frame {
-  margin: 0 auto;
+  margin: 0;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -59,6 +59,8 @@ body {
 
 .calendar-appShell__railInner {
   padding: 22px 18px 18px;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .calendar-appShell__mainInner {
@@ -198,6 +200,7 @@ body {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
+  overflow: auto;
 }
 
 .calendar-day__headingWrap {
@@ -227,6 +230,17 @@ body {
   padding-left: 58px;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.calendar-day__timelineScroller {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  min-height: 0;
+}
+
+.calendar-day__timeline {
+  position: relative;
 }
 
 .calendar-day__row {
@@ -312,4 +326,13 @@ body {
   .calendar-day__heading {
     font-size: 44px;
   }
+}
+
+.calendar-day__nowBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 10;
+  transform: translateY(-50%);
 }
