@@ -13,12 +13,14 @@
   --calendar-slide-easing: cubic-bezier(0.32, 0, 0.18, 1);
   --calendar-bloom-duration: 280ms;
   --calendar-bloom-easing: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --calendar-crossfade-duration: 260ms;
+  --calendar-crossfade-easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html, body, #root { margin: 0; }
 body { color: var(--calendar-text); }
 
-/* ─── App shell ──────────────────────────────────────────────────────────── */
+/* ─── App shell ─────────────────────────────────────────────────────────────── */
 
 .calendar-appShell {
   box-sizing: border-box;
@@ -71,6 +73,119 @@ body { color: var(--calendar-text); }
   padding: 26px 28px 16px 30px;
 }
 
+/* ─── Rail nav bar ────────────────────────────────────────────────────────── */
+
+.calendar-rail__navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.calendar-rail__navBtn {
+  border: 0;
+  background: transparent;
+  color: var(--calendar-text-soft);
+  font-size: 22px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+  min-width: 32px;
+  text-align: center;
+}
+
+.calendar-rail__navBtn:hover {
+  background: rgba(0,0,0,0.055);
+  color: var(--calendar-text);
+}
+
+.calendar-rail__todayBtn {
+  border: 0;
+  background: transparent;
+  color: var(--calendar-text-soft);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.calendar-rail__todayBtn:hover {
+  background: rgba(0,0,0,0.055);
+  color: var(--calendar-text);
+}
+
+.calendar-rail__todayBtn--active {
+  color: var(--mochi-primary, #63c7ef);
+  font-weight: 700;
+}
+
+/* ─── Rail crossfade ─────────────────────────────────────────────────────── */
+/* When viewMode crosses the month/non-month boundary, the rail content       */
+/* fades + lifts between mini-month and day panel.                             */
+
+.calendar-rail__crossfadeWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+@keyframes railFadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes railFadeSlideOut {
+  from { opacity: 1; transform: translateY(0);     }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+
+/* to-day: day panel fades in from below, mini fades out upward */
+.calendar-rail__crossfadeWrap--fading-to-day {
+  animation: railFadeSlideIn var(--calendar-crossfade-duration) var(--calendar-crossfade-easing) both;
+}
+
+/* to-mini: mini month fades in from below, day fades out upward */
+.calendar-rail__crossfadeWrap--fading-to-mini {
+  animation: railFadeSlideIn var(--calendar-crossfade-duration) var(--calendar-crossfade-easing) both;
+}
+
+/* ─── Rail day-panel slide ───────────────────────────────────────────────── */
+/* When the day panel is visible and selectedDate changes, slide left/right.  */
+
+.calendar-rail__dayViewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-rail__dayPane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.calendar-rail__dayPane--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-rail__dayPane--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
+.calendar-rail__dayPane--exit-left   { animation: slideOutToLeft   var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+.calendar-rail__dayPane--exit-right  { animation: slideOutToRight  var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
+
 /* ─── Month rail ─────────────────────────────────────────────────────────── */
 
 .calendar-rail {
@@ -80,7 +195,7 @@ body { color: var(--calendar-text); }
   min-height: 0;
 }
 
-/* Slide viewport clips the two panes */
+/* Slide viewport clips the two mini-month panes */
 .calendar-rail__slideViewport {
   position: relative;
   flex: 1 1 auto;
@@ -96,7 +211,6 @@ body { color: var(--calendar-text); }
   will-change: transform;
 }
 
-/* Enter/exit animations reuse same keyframes as day/month view */
 .calendar-rail__slide--enter-left  { animation: slideInFromLeft  var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
 .calendar-rail__slide--enter-right { animation: slideInFromRight var(--calendar-slide-duration) var(--calendar-slide-easing) both; }
 .calendar-rail__slide--exit-left   { animation: slideOutToLeft   var(--calendar-slide-duration) var(--calendar-slide-easing) both; pointer-events: none; }
@@ -156,7 +270,6 @@ body { color: var(--calendar-text); }
   background: rgba(0,0,0,0.045);
 }
 
-/* Selected pill: scale in with a little bounce */
 .calendar-rail__dayButton--selected {
   background: var(--mochi-primary, #63c7ef);
   color: #ffffff;
@@ -306,7 +419,7 @@ body { color: var(--calendar-text); }
 .calendar-day__timeline--weekCol { padding-left: 0; }
 .calendar-day__eventsLayer--weekCol { left: 0; top: 4px; }
 
-/* ─── Day canvas — timeline ──────────────────────────────────────────────── */
+/* ─── Day canvas — timeline ─────────────────────────────────────────────── */
 
 /* .calendar-day__timelineShell {
   flex: 1 1 auto;
@@ -409,14 +522,14 @@ body { color: var(--calendar-text); }
 
 .calendar-day__eventLocation { margin-top: 4px; }
 
-/* ─── Shared slide keyframes (reused by day, rail, month) ─────────────────── */
+/* ─── Shared slide keyframes ─────────────────────────────────────────────── */
 
 @keyframes slideInFromLeft  { from { transform: translateX(100%);  } to { transform: translateX(0); } }
 @keyframes slideInFromRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 @keyframes slideOutToLeft   { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 @keyframes slideOutToRight  { from { transform: translateX(0); } to { transform: translateX(100%);  } }
 
-/* ─── Day view slide animation ───────────────────────────────────────────── */
+/* ─── Day view slide ─────────────────────────────────────────────────────── */
 
 .calendar-day__slideViewport {
   position: relative;
@@ -665,6 +778,12 @@ body { color: var(--calendar-text); }
   .calendar-rail__slide--enter-right,
   .calendar-rail__slide--exit-left,
   .calendar-rail__slide--exit-right,
+  .calendar-rail__dayPane--enter-left,
+  .calendar-rail__dayPane--enter-right,
+  .calendar-rail__dayPane--exit-left,
+  .calendar-rail__dayPane--exit-right,
+  .calendar-rail__crossfadeWrap--fading-to-day,
+  .calendar-rail__crossfadeWrap--fading-to-mini,
   .calendar-month__slidePane--enter-left,
   .calendar-month__slidePane--enter-right,
   .calendar-month__slidePane--exit-left,
